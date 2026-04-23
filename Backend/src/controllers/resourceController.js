@@ -1,11 +1,11 @@
 const { randomUUID } = require("crypto");
-const { resources } = require("../data/resourceStore");
+const { db } = require("../config/firebase");
 const {
   validateCreatePayload,
   validateStatusUpdate,
 } = require("../utils/resourceValidation");
 
-const createResource = (req, res) => {
+const createResource = async (req, res) => {
   const validation = validateCreatePayload(req.body);
 
   if (!validation.isValid) {
@@ -30,36 +30,57 @@ const createResource = (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  resources.push(resource);
+  try {
+    await db.collection("resources").doc(resource.id).set(resource);
 
-  return res.status(201).json({
-    success: true,
-    message: "Resource created successfully",
-    data: resource,
-  });
+    return res.status(201).json({
+      success: true,
+      message: "Resource created successfully",
+      data: resource,
+    });
+  } catch (error) {
+    console.error("Error creating resource:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to create resource",
+    });
+  }
 };
 
-const getAllResources = (req, res) => {
+const getAllResources = async (req, res) => {
   const { type, status } = req.query;
 
-  const filtered = resources.filter((item) => {
-    if (type && item.type !== type) {
-      return false;
-    }
-    if (status && item.status !== status) {
-      return false;
-    }
-    return true;
-  });
+  try {
+    let query = db.collection("resources");
 
-  return res.status(200).json({
-    success: true,
-    count: filtered.length,
-    data: filtered,
-  });
+    if (type) {
+      query = query.where("type", "==", type);
+    }
+    if (status) {
+      query = query.where("status", "==", status);
+    }
+
+    const snapshot = await query.get();
+    const resources = [];
+    snapshot.forEach((doc) => {
+      resources.push(doc.data());
+    });
+
+    return res.status(200).json({
+      success: true,
+      count: resources.length,
+      data: resources,
+    });
+  } catch (error) {
+    console.error("Error fetching resources:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch resources",
+    });
+  }
 };
 
-const updateResourceStatus = (req, res) => {
+const updateResourceStatus = async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
   const validation = validateStatusUpdate(status);
@@ -72,23 +93,36 @@ const updateResourceStatus = (req, res) => {
     });
   }
 
-  const resource = resources.find((item) => item.id === id);
+  try {
+    const resourceRef = db.collection("resources").doc(id);
+    const doc = await resourceRef.get();
 
-  if (!resource) {
-    return res.status(404).json({
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Resource not found",
+      });
+    }
+
+    await resourceRef.update({
+      status,
+      updatedAt: new Date().toISOString(),
+    });
+
+    const updatedDoc = await resourceRef.get();
+
+    return res.status(200).json({
+      success: true,
+      message: "Resource status updated successfully",
+      data: updatedDoc.data(),
+    });
+  } catch (error) {
+    console.error("Error updating resource:", error);
+    return res.status(500).json({
       success: false,
-      message: "Resource not found",
+      message: "Failed to update resource",
     });
   }
-
-  resource.status = status;
-  resource.updatedAt = new Date().toISOString();
-
-  return res.status(200).json({
-    success: true,
-    message: "Resource status updated successfully",
-    data: resource,
-  });
 };
 
 module.exports = {
