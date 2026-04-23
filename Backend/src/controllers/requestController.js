@@ -1,5 +1,6 @@
 const { randomUUID } = require("crypto");
 const { db } = require("../config/firebase");
+const { runAutoMatch } = require("../services/allocationEngine");
 
 const createRequest = async (req, res) => {
   const { title, resourceType, quantity, urgency, location, description, requesterId } = req.body;
@@ -36,6 +37,9 @@ const createRequest = async (req, res) => {
 
   try {
     await db.collection("requests").doc(requestObj.id).set(requestObj);
+
+    // Trigger auto-match asynchronously
+    runAutoMatch();
 
     return res.status(201).json({
       success: true,
