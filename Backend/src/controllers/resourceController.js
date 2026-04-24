@@ -4,7 +4,6 @@ const {
   validateCreatePayload,
   validateStatusUpdate,
 } = require("../utils/resourceValidation");
-const { runAutoMatch } = require("../services/allocationEngine");
 
 const createResource = async (req, res) => {
   const validation = validateCreatePayload(req.body);
@@ -33,9 +32,6 @@ const createResource = async (req, res) => {
 
   try {
     await db.collection("resources").doc(resource.id).set(resource);
-
-    // Trigger auto-match asynchronously
-    runAutoMatch();
 
     return res.status(201).json({
       success: true,

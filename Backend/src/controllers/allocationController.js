@@ -13,7 +13,7 @@ const getUrgencyScore = (urgency) => {
   }
 };
 
-const runAutoMatch = async () => {
+const runAllocation = async (req, res, next) => {
   console.log("Running Auto-Match Allocation Engine...");
 
   try {
@@ -23,8 +23,7 @@ const runAutoMatch = async () => {
     requestsSnapshot.forEach((doc) => requests.push({ id: doc.id, ...doc.data() }));
 
     if (requests.length === 0) {
-      console.log("No pending requests to match.");
-      return;
+      return res.status(200).json({ success: true, message: "No pending requests to match.", matchCount: 0 });
     }
 
     // Sort requests by priority (urgency score) descending
@@ -37,22 +36,21 @@ const runAutoMatch = async () => {
 
     const batch = db.batch();
     let matchCount = 0;
+    const matches = [];
 
-    for (let req of requests) {
+    for (let reqData of requests) {
       // Find matching resource by type and sufficient quantity
-      const matchIndex = resources.findIndex(res => 
-        res.type === req.resourceType && 
-        res.quantity >= req.quantity &&
-        res.status === "available"
+      const matchIndex = resources.findIndex(resItem => 
+        resItem.type === reqData.resourceType && 
+        resItem.quantity >= reqData.quantity &&
+        resItem.status === "available"
       );
 
       if (matchIndex !== -1) {
         const matchedResource = resources[matchIndex];
         
-        console.log(`Matched Request [${req.id}] with Resource [${matchedResource.id}]`);
-
         // Update Request
-        const requestRef = db.collection("requests").doc(req.id);
+        const requestRef = db.collection("requests").doc(reqData.id);
         batch.update(requestRef, { 
           status: "fulfilled", 
           matchedResourceId: matchedResource.id,
@@ -60,13 +58,14 @@ const runAutoMatch = async () => {
         });
 
         // Update Resource
-        // For simplicity, we just mark the resource as allocated. In a real scenario, we might deduct quantity.
         const resourceRef = db.collection("resources").doc(matchedResource.id);
         batch.update(resourceRef, {
           status: "allocated",
-          matchedRequestId: req.id,
+          matchedRequestId: reqData.id,
           updatedAt: new Date().toISOString()
         });
+
+        matches.push({ requestId: reqData.id, resourceId: matchedResource.id });
 
         // Remove the resource from our local available pool
         resources.splice(matchIndex, 1);
@@ -76,16 +75,31 @@ const runAutoMatch = async () => {
 
     if (matchCount > 0) {
       await batch.commit();
-      console.log(`Successfully auto-matched ${matchCount} requests.`);
+      return res.status(200).json({ 
+        success: true, 
+        message: `Successfully auto-matched ${matchCount} requests.`, 
+        matchCount,
+        matches
+      });
     } else {
-      console.log("No matches found in this run.");
+      return res.status(200).json({ success: true, message: "No matches found in this run.", matchCount: 0 });
     }
 
   } catch (error) {
-    console.error("Error in Allocation Engine:", error);
+    next(error);
   }
 };
 
-module.exports = {
-  runAutoMatch,
+const getAllocations = async (req, res, next) => {
+  try {
+    const requestsSnapshot = await db.collection("requests").where("status", "==", "fulfilled").get();
+    let allocations = [];
+    requestsSnapshot.forEach((doc) => allocations.push({ id: doc.id, ...doc.data() }));
+
+    res.status(200).json({ success: true, count: allocations.length, data: allocations });
+  } catch (error) {
+    next(error);
+  }
 };
+
+module.exports = { runAllocation, getAllocations };
