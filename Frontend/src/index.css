@@ -1,7 +1,46 @@
-<<<<<<< HEAD
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+:root {
+  --background: #0f172a;
+  --foreground: #f8fafc;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --card: #1e293b;
+  --card-foreground: #f8fafc;
+  --border: #334155;
+  --ring: #3b82f6;
+  --sidebar: #1e293b;
+  --sidebar-hover: #334155;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --danger: #ef4444;
+}
+
+@theme {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+
+  /* Legacy Custom Colors from tailwind.config.js */
+  --color-dark-base: #0A0F1A;
+  --color-dark-surface: rgba(255, 255, 255, 0.05);
+  --color-dark-border: rgba(255, 255, 255, 0.1);
+  --color-accent-primary: #E8650A;
+  --color-accent-secondary: #1C3A5E;
+  
+  --font-syne: "Syne", sans-serif;
+  --font-sans: "DM Sans", sans-serif;
+}
 
 @layer base {
   body {
@@ -48,48 +87,6 @@
 
 .animate-pulse-urgent {
   animation: pulse-urgent 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-=======
-@import "tailwindcss";
-
-:root {
-  --background: #0f172a;
-  --foreground: #f8fafc;
-  --primary: #3b82f6;
-  --primary-foreground: #ffffff;
-  --card: #1e293b;
-  --card-foreground: #f8fafc;
-  --border: #334155;
-  --ring: #3b82f6;
-  --sidebar: #1e293b;
-  --sidebar-hover: #334155;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-}
-
-@theme {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-border: var(--border);
-  --color-ring: var(--ring);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-hover: var(--sidebar-hover);
-  --color-success: var(--success);
-  --color-warning: var(--warning);
-  --color-danger: var(--danger);
-}
-
-body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: 'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif;
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 /* Custom scrollbar for dark theme */
@@ -106,5 +103,4 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #475569;
->>>>>>> 0deca9e58728926c0c8d03a3d134279e90af8110
 }

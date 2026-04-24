@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Outlet } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
@@ -57,15 +57,6 @@ const App = () => {
     </ErrorBoundary>
   );
 };
-=======
-import React from 'react';
-import AppRoutes from './routes/AppRoutes';
 
-function App() {
-  return (
-    <AppRoutes />
-  );
-}
->>>>>>> 0deca9e58728926c0c8d03a3d134279e90af8110
 
 export default App;
