@@ -61,12 +61,12 @@ const RoutePlanner = ({ resources, route, setRoute }) => {
   return (
     <>
       <Marker position={route.disasterPoint} icon={disasterIcon}>
-        <Popup className="custom-popup" autoPan={false}>
-          <div className="bg-dark-surface p-2 rounded-lg text-sm">
-            <h4 className="font-bold text-red-500 mb-1">Disaster Zone</h4>
-            <p className="text-gray-600 mb-1">Nearest: <span className="text-gray-900 font-bold">{route.resource.title}</span></p>
-            <p className="text-gray-600">Distance: <span className="text-gray-900 font-bold">{route.distance} km</span></p>
-            <p className="text-gray-600">ETA: <span className="text-gray-900 font-bold">{route.eta} mins</span> (at 40km/h)</p>
+        <Popup className="dark-popup" autoPan={false}>
+          <div className="p-3 flex flex-col gap-1 text-sm text-[#e5e7eb]">
+            <h4 className="font-bold text-[#E8650A] mb-1 pb-1 border-b border-[#E8650A]/30">Disaster Zone</h4>
+            <p>Nearest: <span className="text-white font-bold">{route.resource.title}</span></p>
+            <p>Distance: <span className="text-white font-bold">{route.distance} km</span></p>
+            <p>ETA: <span className="text-white font-bold">{route.eta} mins</span> (at 40km/h)</p>
           </div>
         </Popup>
       </Marker>

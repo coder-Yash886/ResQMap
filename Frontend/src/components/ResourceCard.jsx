@@ -24,7 +24,7 @@ const ResourceCard = ({ resource }) => {
       <div className="flex justify-between items-start mb-3">
         <div className="flex items-center gap-2">
           <span className="text-2xl" role="img" aria-label={type}>
-            {TYPE_ICONS[type?.toLowerCase()] || '📦'}
+            {TYPE_ICONS[type?.trim()?.toLowerCase()] || '📦'}
           </span>
           <span className="text-xs font-bold uppercase tracking-wider text-gray-400">
             {type}
