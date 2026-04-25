@@ -9,6 +9,7 @@ import Sidebar from './components/Sidebar';
 import EmergencyBanner from './components/EmergencyBanner';
 
 // Pages
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import Dashboard from './pages/Dashboard';
 import CreateResource from './pages/CreateResource';
@@ -42,9 +43,10 @@ const App = () => {
       <AuthProvider>
         <Router>
           <Routes>
+            <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             
-            <Route path="/" element={<AuthGuard><Layout /></AuthGuard>}>
+            <Route path="/dashboard" element={<AuthGuard><Layout /></AuthGuard>}>
               <Route index element={<Dashboard />} />
               <Route path="create" element={<CreateResource />} />
               <Route path="resources/:id" element={<ResourceDetail />} />

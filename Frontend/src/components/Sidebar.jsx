@@ -15,9 +15,9 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
   const { logout } = useAuth();
 
   const navItems = [
-    { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-    { name: 'Create Resource', path: '/create', icon: PlusCircle },
-    { name: 'Search & Filter', path: '/search', icon: Search },
+    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Create Resource', path: '/dashboard/create', icon: PlusCircle },
+    { name: 'Search & Filter', path: '/dashboard/search', icon: Search },
   ];
 
   const sidebarContent = (

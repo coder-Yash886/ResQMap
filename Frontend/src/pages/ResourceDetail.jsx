@@ -24,13 +24,12 @@ const ResourceDetail = () => {
           setResource(data.data);
           setSelectedStatus(data.data.status);
         } else {
-            // mock if no backend
             toast.error('Could not find resource details');
-            navigate('/');
+            navigate('/dashboard');
         }
       } catch (error) {
         toast.error('Resource not found');
-        navigate('/');
+        navigate('/dashboard');
       } finally {
         setLoading(false);
       }
@@ -68,7 +67,7 @@ const ResourceDetail = () => {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">
       <button 
-        onClick={() => navigate(-1)}
+        onClick={() => navigate('/dashboard')}
         className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors mb-6"
       >
         <ArrowLeft size={18} />

@@ -49,7 +49,7 @@ const ResourceCard = ({ resource }) => {
         </div>
         
         <Link 
-          to={`/resources/${resourceId}`}
+          to={`/dashboard/resources/${resourceId}`}
           className="text-sm font-medium text-accent-primary hover:text-white transition-colors bg-accent-primary/10 hover:bg-accent-primary px-3 py-1.5 rounded-lg border border-accent-primary/20"
         >
           View Details
