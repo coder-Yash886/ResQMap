@@ -1,10 +1,14 @@
-import React from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { TYPE_COLORS, TYPE_ICONS } from '../utils/constants';
 import StatusBadge from './StatusBadge';
 import { Link } from 'react-router-dom';
+import { useWebSocket } from '../hooks/useWebSocket';
+import HeatmapLayer from './HeatmapLayer';
+import RoutePlanner from './RoutePlanner';
+import { Zap, ZapOff, NavigationOff } from 'lucide-react';
 
 // Fix Leaflet's default icon path issues with bundlers
 delete L.Icon.Default.prototype._getIconUrl;
@@ -47,13 +51,86 @@ const createCustomIcon = (type) => {
   });
 };
 
-const ResourceMap = ({ resources }) => {
+const ResourceMap = ({ resources: initialResources }) => {
+  const [showHeatmap, setShowHeatmap] = useState(false);
+  const [route, setRoute] = useState(null);
+  const [liveResources, setLiveResources] = useState([]);
+  
+  const { isConnected, lastMessage } = useWebSocket('ws://localhost:5000');
+
+  // Initialize live resources with the prop resources
+  useEffect(() => {
+    setLiveResources(initialResources);
+  }, [initialResources]);
+
+  // Update live resources when a new WebSocket message arrives
+  useEffect(() => {
+    if (lastMessage && lastMessage.id) {
+      setLiveResources(prev => {
+        const existingIdx = prev.findIndex(r => (r._id || r.id) === lastMessage.id);
+        if (existingIdx !== -1) {
+          const updated = [...prev];
+          updated[existingIdx] = { ...updated[existingIdx], ...lastMessage };
+          return updated;
+        }
+        return [...prev, lastMessage];
+      });
+    }
+  }, [lastMessage]);
+
   // Default center (can be user's location or disaster epicenter)
   // Coordinates are roughly Delhi/India for context, but can be anywhere
   const defaultCenter = [28.6139, 77.2090]; 
 
+  // Prepare points for the heatmap
+  const heatmapPoints = useMemo(() => {
+    return liveResources.map(res => {
+      const status = res.status?.toLowerCase();
+      let weight = 0;
+      if (status === 'available') weight = 0.2;
+      else if (status === 'allocated') weight = 0.6;
+      else if (status === 'completed') weight = 0.1;
+      return [res.lat, res.lng, weight];
+    });
+  }, [liveResources]);
+
   return (
     <div className="w-full h-[500px] rounded-xl overflow-hidden border border-dark-border shadow-lg relative z-0">
+      
+      {/* UI Overlay Controls */}
+      <div className="absolute top-4 right-4 z-[1000] flex flex-col gap-2">
+        <div className="bg-dark-base/80 backdrop-blur-md px-3 py-2 rounded-lg border border-dark-border flex items-center gap-2 shadow-lg">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-3 w-3">
+              {isConnected && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>}
+              <span className={`relative inline-flex rounded-full h-3 w-3 ${isConnected ? 'bg-green-500' : 'bg-red-500'}`}></span>
+            </span>
+            <span className="text-xs font-bold uppercase text-white tracking-wider">
+              {isConnected ? 'Live' : 'Disconnected'}
+            </span>
+          </div>
+        </div>
+
+        <button 
+          onClick={() => setShowHeatmap(!showHeatmap)}
+          className={`flex items-center gap-2 px-3 py-2 rounded-lg border backdrop-blur-md font-bold text-xs transition-all shadow-lg
+            ${showHeatmap ? 'bg-accent-primary border-orange-500 text-white' : 'bg-dark-base/80 border-dark-border text-gray-300 hover:text-white hover:bg-dark-surface'}`}
+        >
+          {showHeatmap ? <Zap size={14} /> : <ZapOff size={14} />}
+          {showHeatmap ? 'Hide Heatmap' : 'Show Heatmap'}
+        </button>
+
+        {route && (
+          <button 
+            onClick={() => setRoute(null)}
+            className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-600/90 hover:bg-red-500 border border-red-400 backdrop-blur-md font-bold text-xs text-white transition-all shadow-lg"
+          >
+            <NavigationOff size={14} />
+            Clear Route
+          </button>
+        )}
+      </div>
+
       <MapContainer 
         center={defaultCenter} 
         zoom={11} 
@@ -64,7 +141,11 @@ const ResourceMap = ({ resources }) => {
           url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
         
-        {resources.map((resource) => {
+        <HeatmapLayer points={heatmapPoints} isVisible={showHeatmap} />
+        
+        <RoutePlanner resources={liveResources} route={route} setRoute={setRoute} />
+        
+        {liveResources.map((resource) => {
           if (!resource.lat || !resource.lng) return null;
           
           return (
@@ -108,6 +189,7 @@ const ResourceMap = ({ resources }) => {
         }
         .leaflet-container {
           font-family: 'DM Sans', sans-serif;
+          cursor: crosshair;
         }
       `}</style>
     </div>

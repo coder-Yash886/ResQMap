@@ -89,6 +89,20 @@
   animation: pulse-urgent 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+@keyframes dash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+.animate-dash {
+  animation: dash 1s linear infinite;
+}
+
+.custom-leaflet-marker {
+  transition: transform 1s ease-in-out;
+}
+
 /* Custom scrollbar for dark theme */
 ::-webkit-scrollbar {
   width: 8px;
