@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { auth } from '../firebase';
-import { onAuthStateChanged, signOut } from 'firebase/auth';
+import api from '../services/api';
 
 const AuthContext = createContext();
 
@@ -8,34 +7,69 @@ export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
   const [currentUser, setCurrentUser] = useState(null);
-  const [idToken, setIdToken] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      if (user) {
-        const token = await user.getIdToken();
-        setIdToken(token);
-        localStorage.setItem('idToken', token);
+    const checkUser = async () => {
+      const storedToken = localStorage.getItem('token');
+      if (storedToken) {
+        try {
+          const response = await api.get('/auth/profile');
+          if (response.data.success) {
+            setCurrentUser(response.data.user);
+            setToken(storedToken);
+          }
+        } catch (error) {
+          console.error("Auth check failed:", error);
+          localStorage.removeItem('token');
+          setCurrentUser(null);
+          setToken(null);
+        }
       } else {
-        setIdToken(null);
-        localStorage.removeItem('idToken');
+        setCurrentUser(null);
+        setToken(null);
       }
       setLoading(false);
-    });
+    };
 
-    return unsubscribe;
+    checkUser();
   }, []);
 
-  const logout = async () => {
-    await signOut(auth);
+  const login = async (email, password) => {
+    const response = await api.post('/auth/login', { email, password });
+    if (response.data.success) {
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
+      setCurrentUser(response.data.user);
+      return response.data;
+    }
+    throw new Error(response.data.message || 'Login failed');
+  };
+
+  const register = async (name, email, password) => {
+    const response = await api.post('/auth/register', { name, email, password });
+    if (response.data.success) {
+      localStorage.setItem('token', response.data.token);
+      setToken(response.data.token);
+      setCurrentUser(response.data.user);
+      return response.data;
+    }
+    throw new Error(response.data.message || 'Registration failed');
+  };
+
+  const logout = () => {
+    localStorage.removeItem('token');
+    setToken(null);
+    setCurrentUser(null);
   };
 
   const value = {
     currentUser,
-    idToken,
+    token,
     loading,
+    login,
+    register,
     logout
   };
 
