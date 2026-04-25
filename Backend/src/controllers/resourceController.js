@@ -1,5 +1,4 @@
-const { randomUUID } = require("crypto");
-const { db } = require("../config/firebase");
+const Resource = require("../models/Resource");
 const {
   validateCreatePayload,
   validateStatusUpdate,
@@ -18,20 +17,15 @@ const createResource = async (req, res) => {
 
   const { title, type, quantity, location, description = "" } = req.body;
 
-  const resource = {
-    id: randomUUID(),
-    title: title.trim(),
-    type,
-    quantity,
-    location: location.trim(),
-    description: typeof description === "string" ? description.trim() : "",
-    status: "available",
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
   try {
-    await db.collection("resources").doc(resource.id).set(resource);
+    const resource = await Resource.create({
+      title: title.trim(),
+      type,
+      quantity,
+      location: location.trim(),
+      description: typeof description === "string" ? description.trim() : "",
+      status: "available",
+    });
 
     return res.status(201).json({
       success: true,
@@ -51,20 +45,16 @@ const getAllResources = async (req, res) => {
   const { type, status } = req.query;
 
   try {
-    let query = db.collection("resources");
+    let query = {};
 
     if (type) {
-      query = query.where("type", "==", type);
+      query.type = type;
     }
     if (status) {
-      query = query.where("status", "==", status);
+      query.status = status;
     }
 
-    const snapshot = await query.get();
-    const resources = [];
-    snapshot.forEach((doc) => {
-      resources.push(doc.data());
-    });
+    const resources = await Resource.find(query);
 
     return res.status(200).json({
       success: true,
@@ -94,27 +84,23 @@ const updateResourceStatus = async (req, res) => {
   }
 
   try {
-    const resourceRef = db.collection("resources").doc(id);
-    const doc = await resourceRef.get();
+    const resource = await Resource.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    );
 
-    if (!doc.exists) {
+    if (!resource) {
       return res.status(404).json({
         success: false,
         message: "Resource not found",
       });
     }
 
-    await resourceRef.update({
-      status,
-      updatedAt: new Date().toISOString(),
-    });
-
-    const updatedDoc = await resourceRef.get();
-
     return res.status(200).json({
       success: true,
       message: "Resource status updated successfully",
-      data: updatedDoc.data(),
+      data: resource,
     });
   } catch (error) {
     console.error("Error updating resource:", error);

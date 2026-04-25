@@ -1,35 +1,77 @@
-const { db } = require("../config/firebase");
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
 
-// This handles login or registration mapping from Firebase Auth to our Database
-const syncUser = async (req, res, next) => {
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: "30d",
+  });
+};
+
+const register = async (req, res, next) => {
   try {
-    // The user object is attached by authMiddleware.js
-    const { uid, email, name, picture } = req.user;
+    const { name, email, password } = req.body;
 
-    const userRef = db.collection("users").doc(uid);
-    const doc = await userRef.get();
+    if (!name || !email || !password) {
+      return res.status(400).json({ success: false, message: "Please provide name, email and password" });
+    }
 
-    if (!doc.exists) {
-      // Create new user
-      const newUser = {
-        uid,
-        email,
-        name: name || "",
-        picture: picture || "",
-        role: "user", // default role
-        createdAt: new Date().toISOString(),
-      };
-      await userRef.set(newUser);
-      return res.status(201).json({ success: true, user: newUser });
-    } else {
-      // Update existing user (e.g. if name/picture changed)
-      await userRef.update({
-        name: name || doc.data().name,
-        picture: picture || doc.data().picture,
-        lastLoginAt: new Date().toISOString()
+    const userExists = await User.findOne({ email });
+
+    if (userExists) {
+      return res.status(400).json({ success: false, message: "User already exists" });
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password,
+    });
+
+    if (user) {
+      res.status(201).json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token: generateToken(user._id),
       });
-      const updatedDoc = await userRef.get();
-      return res.status(200).json({ success: true, user: updatedDoc.data() });
+    } else {
+      res.status(400).json({ success: false, message: "Invalid user data" });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+const login = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: "Please provide email and password" });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (user && (await user.comparePassword(password))) {
+      user.lastLoginAt = Date.now();
+      await user.save();
+
+      res.status(200).json({
+        success: true,
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token: generateToken(user._id),
+      });
+    } else {
+      res.status(401).json({ success: false, message: "Invalid email or password" });
     }
   } catch (error) {
     next(error);
@@ -38,17 +80,16 @@ const syncUser = async (req, res, next) => {
 
 const getProfile = async (req, res, next) => {
   try {
-    const { uid } = req.user;
-    const doc = await db.collection("users").doc(uid).get();
+    const user = await User.findById(req.user._id);
 
-    if (!doc.exists) {
+    if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
 
-    res.status(200).json({ success: true, user: doc.data() });
+    res.status(200).json({ success: true, user });
   } catch (error) {
     next(error);
   }
 };
 
-module.exports = { syncUser, getProfile };
+module.exports = { register, login, getProfile };

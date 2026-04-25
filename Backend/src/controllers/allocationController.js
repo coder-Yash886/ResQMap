@@ -1,4 +1,5 @@
-const { db } = require("../config/firebase");
+const Request = require("../models/Request");
+const Resource = require("../models/Resource");
 
 // Priority score formula:
 // Urgency: Critical (4), High (3), Medium (2), Low (1)
@@ -18,9 +19,7 @@ const runAllocation = async (req, res, next) => {
 
   try {
     // Get all pending requests
-    const requestsSnapshot = await db.collection("requests").where("status", "==", "pending").get();
-    let requests = [];
-    requestsSnapshot.forEach((doc) => requests.push({ id: doc.id, ...doc.data() }));
+    const requests = await Request.find({ status: "pending" });
 
     if (requests.length === 0) {
       return res.status(200).json({ success: true, message: "No pending requests to match.", matchCount: 0 });
@@ -30,11 +29,8 @@ const runAllocation = async (req, res, next) => {
     requests.sort((a, b) => getUrgencyScore(b.urgency) - getUrgencyScore(a.urgency));
 
     // Get all available resources
-    const resourcesSnapshot = await db.collection("resources").where("status", "==", "available").get();
-    let resources = [];
-    resourcesSnapshot.forEach((doc) => resources.push({ id: doc.id, ...doc.data() }));
+    const resources = await Resource.find({ status: "available" });
 
-    const batch = db.batch();
     let matchCount = 0;
     const matches = [];
 
@@ -50,22 +46,16 @@ const runAllocation = async (req, res, next) => {
         const matchedResource = resources[matchIndex];
         
         // Update Request
-        const requestRef = db.collection("requests").doc(reqData.id);
-        batch.update(requestRef, { 
-          status: "fulfilled", 
-          matchedResourceId: matchedResource.id,
-          updatedAt: new Date().toISOString()
-        });
+        reqData.status = "fulfilled";
+        reqData.matchedResourceId = matchedResource._id;
+        await reqData.save();
 
         // Update Resource
-        const resourceRef = db.collection("resources").doc(matchedResource.id);
-        batch.update(resourceRef, {
-          status: "allocated",
-          matchedRequestId: reqData.id,
-          updatedAt: new Date().toISOString()
-        });
+        matchedResource.status = "allocated";
+        matchedResource.matchedRequestId = reqData._id;
+        await matchedResource.save();
 
-        matches.push({ requestId: reqData.id, resourceId: matchedResource.id });
+        matches.push({ requestId: reqData._id, resourceId: matchedResource._id });
 
         // Remove the resource from our local available pool
         resources.splice(matchIndex, 1);
@@ -74,7 +64,6 @@ const runAllocation = async (req, res, next) => {
     }
 
     if (matchCount > 0) {
-      await batch.commit();
       return res.status(200).json({ 
         success: true, 
         message: `Successfully auto-matched ${matchCount} requests.`, 
@@ -92,9 +81,7 @@ const runAllocation = async (req, res, next) => {
 
 const getAllocations = async (req, res, next) => {
   try {
-    const requestsSnapshot = await db.collection("requests").where("status", "==", "fulfilled").get();
-    let allocations = [];
-    requestsSnapshot.forEach((doc) => allocations.push({ id: doc.id, ...doc.data() }));
+    const allocations = await Request.find({ status: "fulfilled" }).populate("matchedResourceId");
 
     res.status(200).json({ success: true, count: allocations.length, data: allocations });
   } catch (error) {

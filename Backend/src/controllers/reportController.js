@@ -1,31 +1,15 @@
-const { db } = require("../config/firebase");
+const Resource = require("../models/Resource");
+const Request = require("../models/Request");
 
 const getSummaryReport = async (req, res, next) => {
   try {
-    const resourcesSnapshot = await db.collection("resources").get();
-    const requestsSnapshot = await db.collection("requests").get();
+    const totalResources = await Resource.countDocuments();
+    const availableResources = await Resource.countDocuments({ status: "available" });
+    const allocatedResources = await Resource.countDocuments({ status: "allocated" });
 
-    let totalResources = 0;
-    let availableResources = 0;
-    let allocatedResources = 0;
-
-    resourcesSnapshot.forEach((doc) => {
-      totalResources++;
-      const data = doc.data();
-      if (data.status === "available") availableResources++;
-      if (data.status === "allocated") allocatedResources++;
-    });
-
-    let totalRequests = 0;
-    let pendingRequests = 0;
-    let fulfilledRequests = 0;
-
-    requestsSnapshot.forEach((doc) => {
-      totalRequests++;
-      const data = doc.data();
-      if (data.status === "pending") pendingRequests++;
-      if (data.status === "fulfilled") fulfilledRequests++;
-    });
+    const totalRequests = await Request.countDocuments();
+    const pendingRequests = await Request.countDocuments({ status: "pending" });
+    const fulfilledRequests = await Request.countDocuments({ status: "fulfilled" });
 
     return res.status(200).json({
       success: true,

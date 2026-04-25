@@ -1,5 +1,4 @@
-const { randomUUID } = require("crypto");
-const { db } = require("../config/firebase");
+const Request = require("../models/Request");
 
 const createRequest = async (req, res) => {
   const { title, resourceType, quantity, urgency, location, description, requesterId } = req.body;
@@ -20,22 +19,17 @@ const createRequest = async (req, res) => {
     });
   }
 
-  const requestObj = {
-    id: randomUUID(),
-    title: title.trim(),
-    resourceType,
-    quantity,
-    urgency: urgency.toLowerCase(),
-    location: location.trim(),
-    description: description ? description.trim() : "",
-    requesterId: requesterId || "anonymous",
-    status: "pending", // pending, fulfilled, closed
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-  };
-
   try {
-    await db.collection("requests").doc(requestObj.id).set(requestObj);
+    const requestObj = await Request.create({
+      title: title.trim(),
+      resourceType,
+      quantity,
+      urgency: urgency.toLowerCase(),
+      location: location.trim(),
+      description: description ? description.trim() : "",
+      requesterId: requesterId || "anonymous",
+      status: "pending", // pending, fulfilled, closed
+    });
 
     return res.status(201).json({
       success: true,
@@ -55,20 +49,16 @@ const getAllRequests = async (req, res) => {
   const { urgency, status } = req.query;
 
   try {
-    let query = db.collection("requests");
+    let query = {};
 
     if (urgency) {
-      query = query.where("urgency", "==", urgency.toLowerCase());
+      query.urgency = urgency.toLowerCase();
     }
     if (status) {
-      query = query.where("status", "==", status.toLowerCase());
+      query.status = status.toLowerCase();
     }
 
-    const snapshot = await query.get();
-    const requests = [];
-    snapshot.forEach((doc) => {
-      requests.push(doc.data());
-    });
+    const requests = await Request.find(query);
 
     return res.status(200).json({
       success: true,
@@ -97,27 +87,23 @@ const updateRequestStatus = async (req, res) => {
   }
 
   try {
-    const requestRef = db.collection("requests").doc(id);
-    const doc = await requestRef.get();
+    const request = await Request.findByIdAndUpdate(
+      id,
+      { status: status.toLowerCase() },
+      { new: true, runValidators: true }
+    );
 
-    if (!doc.exists) {
+    if (!request) {
       return res.status(404).json({
         success: false,
         message: "Request not found",
       });
     }
 
-    await requestRef.update({
-      status: status.toLowerCase(),
-      updatedAt: new Date().toISOString(),
-    });
-
-    const updatedDoc = await requestRef.get();
-
     return res.status(200).json({
       success: true,
       message: "Request status updated successfully",
-      data: updatedDoc.data(),
+      data: request,
     });
   } catch (error) {
     console.error("Error updating request:", error);

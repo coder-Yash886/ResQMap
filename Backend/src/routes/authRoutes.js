@@ -1,11 +1,11 @@
 const express = require("express");
-const { syncUser, getProfile } = require("../controllers/authController");
+const { register, login, getProfile } = require("../controllers/authController");
 const { verifyToken } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-// Route to sync Firebase user to Firestore (Call after login/register on frontend)
-router.post("/sync", verifyToken, syncUser);
+router.post("/register", register);
+router.post("/login", login);
 
 // Route to get current user profile
 router.get("/profile", verifyToken, getProfile);
