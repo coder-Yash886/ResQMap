@@ -1,9 +1,44 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldAlert, ArrowRight, Shield, Globe, Activity, Menu, X } from 'lucide-react';
+import { ShieldAlert, ArrowRight, Shield, Globe, Activity, Menu, X, Mail, Send } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+const GithubIcon = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
+    <path d="M9 18c-4.51 2-5-2-7-2" />
+  </svg>
+);
+
+const LinkedinIcon = ({ size = 24, className = "" }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+    <rect width="4" height="12" x="2" y="9" />
+    <circle cx="4" cy="4" r="2" />
+  </svg>
+);
 
 const LandingPage = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({ name: '', email: '', message: '' });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleContactSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    // Simulate sending message
+    setTimeout(() => {
+      toast.success('Message sent successfully! We will get back to you soon.');
+      setContactForm({ name: '', email: '', message: '' });
+      setIsSubmitting(false);
+    }, 1000);
+  };
+
+  const scrollToContact = (e) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   return (
     <div className="min-h-screen bg-dark-base text-gray-100 font-sans selection:bg-accent-primary/30 flex flex-col relative overflow-hidden">
@@ -25,6 +60,9 @@ const LandingPage = () => {
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center space-x-8">
+              <a href="#contact" onClick={scrollToContact} className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
+                Contact
+              </a>
               <Link to="/login" className="text-sm font-medium text-gray-300 hover:text-white transition-colors">
                 Operator Login
               </Link>
@@ -49,6 +87,13 @@ const LandingPage = () => {
         {mobileMenuOpen && (
           <div className="md:hidden bg-dark-surface border-b border-dark-border animate-fade-in absolute w-full shadow-2xl">
             <div className="px-4 pt-2 pb-6 flex flex-col space-y-4">
+              <a 
+                href="#contact" 
+                onClick={scrollToContact}
+                className="text-base font-medium text-gray-300 hover:text-white transition-colors p-2"
+              >
+                Contact
+              </a>
               <Link 
                 to="/login" 
                 className="text-base font-medium text-gray-300 hover:text-white transition-colors p-2"
@@ -120,25 +165,121 @@ const LandingPage = () => {
             <p className="text-gray-400 text-sm md:text-base leading-relaxed">JWT-encrypted endpoints and isolated database architectures ensure mission-critical data integrity.</p>
           </div>
         </div>
+
+        {/* Contact Section */}
+        <div id="contact" className="mt-32 w-full max-w-4xl mx-auto text-left scroll-mt-24">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-syne font-bold text-white mb-4">Get In Touch</h2>
+            <p className="text-gray-400">Have questions about deployment or integration? Send us a message.</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            <div className="space-y-6">
+              <div className="glass-card p-6 border-l-4 border-l-accent-primary flex items-start gap-4">
+                <div className="bg-accent-primary/10 p-3 rounded-lg">
+                  <Mail className="text-accent-primary" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white mb-1">Direct Contact</h4>
+                  <a href="mailto:contact@resqmap.com" className="text-gray-400 hover:text-accent-primary transition-colors">contact@resqmap.com</a>
+                </div>
+              </div>
+
+              <div className="glass-card p-6 border-l-4 border-l-[#0077b5] flex items-start gap-4">
+                <div className="bg-[#0077b5]/10 p-3 rounded-lg">
+                  <LinkedinIcon className="text-[#0077b5]" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white mb-1">LinkedIn</h4>
+                  <a href="https://www.linkedin.com/in/yash-kumar-2a7076325" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#0077b5] transition-colors break-all">
+                    linkedin.com/in/yash-kumar-2a7076325
+                  </a>
+                </div>
+              </div>
+
+              <div className="glass-card p-6 border-l-4 border-l-gray-300 flex items-start gap-4">
+                <div className="bg-gray-300/10 p-3 rounded-lg">
+                  <GithubIcon className="text-gray-300" size={24} />
+                </div>
+                <div>
+                  <h4 className="text-lg font-bold text-white mb-1">GitHub</h4>
+                  <a href="https://github.com/coder-Yash886" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-300 transition-colors break-all">
+                    github.com/coder-Yash886
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={handleContactSubmit} className="glass-card p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Your Name</label>
+                <input 
+                  type="text" 
+                  required
+                  value={contactForm.name}
+                  onChange={(e) => setContactForm({...contactForm, name: e.target.value})}
+                  className="input-field" 
+                  placeholder="John Doe" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Email Address</label>
+                <input 
+                  type="email" 
+                  required
+                  value={contactForm.email}
+                  onChange={(e) => setContactForm({...contactForm, email: e.target.value})}
+                  className="input-field" 
+                  placeholder="john@example.com" 
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-400 mb-1">Message</label>
+                <textarea 
+                  required
+                  value={contactForm.message}
+                  onChange={(e) => setContactForm({...contactForm, message: e.target.value})}
+                  className="input-field min-h-[120px] resize-y" 
+                  placeholder="How can we help you?" 
+                ></textarea>
+              </div>
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full btn-primary py-3 flex items-center justify-center gap-2 mt-2"
+              >
+                {isSubmitting ? 'Sending...' : (
+                  <>
+                    <Send size={18} /> Send Message
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
       </main>
       
       {/* Footer */}
       <footer className="w-full border-t border-dark-border bg-dark-surface/50 relative z-10 mt-auto">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
           <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="text-accent-primary/80" size={20} />
-              <span className="font-syne font-bold text-gray-300">ResQMap AidSync</span>
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="text-accent-primary/80" size={20} />
+                <span className="font-syne font-bold text-gray-300 text-lg">ResQMap AidSync</span>
+              </div>
+              <p className="text-sm text-gray-500">
+                &copy; {new Date().getFullYear()} Yash Kumar. All rights reserved.
+              </p>
             </div>
             
-            <p className="text-sm text-gray-500 text-center md:text-left">
-              &copy; {new Date().getFullYear()} ResQMap Global Response. All systems operational.
-            </p>
-            
-            <div className="flex gap-6 text-sm text-gray-400">
-              <a href="#" className="hover:text-accent-primary transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-accent-primary transition-colors">Terms of Service</a>
-              <a href="#" className="hover:text-accent-primary transition-colors">Status</a>
+            <div className="flex items-center gap-6">
+              <a href="https://github.com/coder-Yash886" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors" aria-label="GitHub">
+                <GithubIcon size={24} />
+              </a>
+              <a href="https://www.linkedin.com/in/yash-kumar-2a7076325" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[#0077b5] transition-colors" aria-label="LinkedIn">
+                <LinkedinIcon size={24} />
+              </a>
             </div>
           </div>
         </div>
