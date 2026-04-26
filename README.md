@@ -30,7 +30,8 @@
 
 **Backend:**
 - Node.js / Express.js
-- MongoDB / PostgreSQL *(Configure as per your setup)*
+- MongoDB / Mongoose (Cloud Atlas integration)
+- JWT-based Authentication
 
 ---
 
