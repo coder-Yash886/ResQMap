@@ -1,4 +1,4 @@
-# 🌍 ResQMap - AidSync
+# 🌍 ResQMap
 
 <div align="center">
   <h3>A Unified Disaster Relief & Resource Management System</h3>
@@ -9,90 +9,159 @@
 
 ## 🚀 Overview
 
-**ResQMap (AidSync)** is a comprehensive disaster management platform built to help agencies, volunteers, and victims coordinate effectively during emergencies. It provides real-time situational awareness, ensuring that resources like food, water, and medical aid reach those in need promptly.
+**ResQMap (AidSync)** is a disaster management platform that helps agencies, volunteers, and victims coordinate during emergencies. It provides real-time situational awareness, resource tracking, and analytics to ensure aid reaches those in need.
+
+---
 
 ## ✨ Key Features
 
-- 🗺️ **Interactive Relief Map**: Real-time visualization of disaster zones and resource distribution points using **Leaflet**.
-- 🚨 **Emergency Alert System**: Dynamic alert banners to quickly notify users of critical updates and severe warnings.
-- 📊 **Resource Analytics Dashboard**: Insightful charts and graphs built with **Recharts** to monitor aid distribution.
-- 📱 **Fully Responsive UI**: A beautifully crafted, modern user interface utilizing **Tailwind CSS**.
-- ⚡ **Fast & Reliable**: Designed for high performance and reliability during high-stress situations.
+- 🗺️ Interactive Relief Map (React Leaflet)
+- 🚨 Emergency Alert System
+- 📊 Resource Analytics Dashboard (Recharts)
+- 📱 Responsive UI (Tailwind CSS)
+- ⚡ Fast & Reliable (Vite + Node)
+
+---
 
 ## 🛠️ Tech Stack
 
-**Frontend:**
-- React.js (Vite)
-- Tailwind CSS (Styling)
-- React Leaflet (Interactive Maps)
-- Recharts (Data Visualization)
-- Lucide React (Icons)
+**Frontend:** React (Vite), Tailwind CSS, React Leaflet, Recharts, Lucide React
 
-**Backend:**
-- Node.js / Express.js
-- MongoDB / Mongoose (Cloud Atlas integration)
-- JWT-based Authentication
+**Backend:** Node.js, Express, MongoDB (Mongoose), JWT-based auth
 
 ---
 
-## 📦 Getting Started
+## 📁 Full Project Folder Structure
 
-Follow these steps to set up the project locally on your machine.
+```
+ResQMap/
+├── Frontend/
+│   ├── package.json
+│   ├── vite.config.js
+│   ├── postcss.config.js
+│   ├── tailwind.config.js
+│   ├── eslint.config.js
+│   ├── README.md
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   └── src/
+│       ├── main.jsx
+│       ├── index.css
+│       ├── App.css
+│       ├── App.jsx
+│       ├── assets/
+│       │   ├── hero.png
+│       │   ├── react.svg
+│       │   └── vite.svg
+│       ├── components/
+│       │   ├── AuthGuard.jsx
+│       │   ├── EmergencyBanner.jsx
+│       │   ├── ErrorBoundary.jsx
+│       │   ├── FilterBar.jsx
+│       │   ├── HeatmapLayer.jsx
+│       │   ├── LoadingSpinner.jsx
+│       │   ├── ResourceCard.jsx
+│       │   ├── ResourceChart.jsx
+│       │   ├── ResourceMap.jsx
+│       │   ├── RoutePlanner.jsx
+│       │   ├── Sidebar.jsx
+│       │   ├── StatCard.jsx
+│       │   ├── StatusBadge.jsx
+│       │   └── Toast.jsx
+│       ├── contexts/
+│       │   └── AuthContext.jsx
+│       ├── hooks/
+│       │   └── useWebSocket.js
+│       ├── layouts/
+│       │   └── DashboardLayout.jsx
+│       ├── pages/
+│       │   ├── CreateResource.jsx
+│       │   ├── Dashboard.jsx
+│       │   ├── FilterPage.jsx
+│       │   ├── LandingPage.jsx
+│       │   ├── LoginPage.jsx
+│       │   └── ResourceDetail.jsx
+│       ├── routes/
+│       │   └── AppRoutes.jsx
+│       ├── services/
+│       │   ├── api.js
+│       │   └── resources.js
+│       └── utils/
+│           ├── constants.js
+│           └── validators.js
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/coder-Yash886/ResQMap.git
-cd ResQMap
+├── Backend/
+│   ├── package.json
+│   └── src/
+│       ├── app.js
+│       ├── server.js
+│       ├── config/
+│       │   └── db.js
+│       ├── controllers/
+│       │   ├── allocationController.js
+│       │   ├── authController.js
+│       │   ├── healthController.js
+│       │   ├── reportController.js
+│       │   ├── requestController.js
+│       │   └── resourceController.js
+│       ├── middleware/
+│       │   ├── authMiddleware.js
+│       │   └── errorMiddleware.js
+│       ├── models/
+│       │   ├── Request.js
+│       │   ├── Resource.js
+│       │   └── User.js
+│       ├── routes/
+│       │   ├── allocationRoutes.js
+│       │   ├── authRoutes.js
+│       │   ├── healthRoutes.js
+│       │   ├── reportRoutes.js
+│       │   ├── requestRoutes.js
+│       │   └── resourceRoutes.js
+│       └── utils/
+│           └── resourceValidation.js
+
+└── README.md
 ```
 
-### 2. Run the Frontend
-```bash
-cd Frontend
-npm install
+---
+
+## 🔧 Quick Setup (PowerShell)
+
+1) Clone the repo
+
+```powershell
+git clone https://github.com/coder-Yash886/ResQMap.git; cd "ResQMap"
+```
+
+2) Frontend
+
+```powershell
+cd Frontend; npm install; npm run dev
+```
+
+- Visit: http://localhost:5173/
+
+3) Backend
+
+```powershell
+cd Backend; npm install
+# create a .env file (example below)
+# development: npm run dev  (uses nodemon)
 npm run dev
+# or: npm start
 ```
-*The frontend will start running on `http://localhost:5173/`*
 
-### 3. Run the Backend
-```bash
-cd Backend
-npm install
-npm start
+### Backend/.env example
+
+```
+MONGO_URI=your_mongo_connection_string
+JWT_SECRET=replace_with_a_strong_secret
+PORT=5000
 ```
 
 ---
 
-## 🤝 How to Contribute
+If you want, I can add a `Backend/.env.example` file to the repository and update `Frontend/src/services/api.js` with an environment-based API URL. Let me know which additional details you want included.
 
-We welcome contributions! To collaborate on this project:
-
-1. **Pull the latest changes** from the `main` branch to avoid conflicts:
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
-2. **Create a new branch** for your feature or bugfix:
-   ```bash
-   git checkout -b feature/amazing-feature
-   ```
-3. **Commit your changes** with descriptive messages:
-   ```bash
-   git add .
-   git commit -m "feat: added an amazing feature"
-   ```
-4. **Push your branch** to GitHub:
-   ```bash
-   git push origin feature/amazing-feature
-   ```
-5. **Open a Pull Request (PR)** on GitHub.
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
-<div align="center">
-  <br>
-  <i>Built with ❤️ to make a difference during critical times.</i>
-</div>
