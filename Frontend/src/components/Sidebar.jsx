@@ -1,14 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { 
-  LayoutDashboard, 
-  PlusCircle, 
-  Search, 
-  LogOut, 
+import {
+  LayoutDashboard,
+  PlusCircle,
+  Search,
+  LogOut,
   Menu,
   X,
-  ShieldAlert
+  ShieldAlert,
+  AlertTriangle,
+  ClipboardList,
+  Siren
 } from 'lucide-react';
 
 const Sidebar = ({ mobileOpen, setMobileOpen }) => {
@@ -18,6 +21,9 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
     { name: 'Dashboard', path: '/', icon: LayoutDashboard },
     { name: 'Create Resource', path: '/create', icon: PlusCircle },
     { name: 'Search & Filter', path: '/search', icon: Search },
+    { name: 'Raise a Need', path: '/raise-request', icon: AlertTriangle },
+    { name: 'Requests Board', path: '/requests', icon: ClipboardList },
+    { name: 'Emergency', path: '/emergency', icon: Siren },
   ];
 
   const sidebarContent = (
@@ -31,17 +37,21 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       </div>
 
       {/* Nav Links */}
-      <div className="flex-1 px-4 py-6 space-y-2">
+      <div className="flex-1 px-4 py-6 space-y-1">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isEmergency = item.path === '/emergency';
           return (
             <NavLink
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                  isActive 
-                    ? 'bg-accent-primary/10 text-accent-primary border border-accent-primary/20' 
+                `flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
+                  ? isEmergency
+                    ? 'bg-red-500/10 text-red-400 border border-red-500/20'
+                    : 'bg-accent-primary/10 text-accent-primary border border-accent-primary/20'
+                  : isEmergency
+                    ? 'text-red-400/60 hover:text-red-400 hover:bg-red-500/10'
                     : 'text-gray-400 hover:text-gray-100 hover:bg-dark-surface'
                 }`
               }
@@ -49,6 +59,11 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             >
               <Icon size={20} />
               <span className="font-sans font-medium">{item.name}</span>
+              {isEmergency && (
+                <span style={{ marginLeft: 'auto', background: '#ef4444', color: '#fff', fontSize: '0.55rem', fontWeight: 800, padding: '1px 5px', borderRadius: '4px', letterSpacing: '0.05em' }}>
+                  LIVE
+                </span>
+              )}
             </NavLink>
           );
         })}
@@ -91,7 +106,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           <div className="w-64 h-full pt-16">
             {sidebarContent}
           </div>
-          <div 
+          <div
             className="flex-1 bg-black/50 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
