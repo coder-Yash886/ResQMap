@@ -3,14 +3,14 @@ import { useMapEvents, Polyline, Popup, Marker } from 'react-leaflet';
 import L from 'leaflet';
 
 const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const R = 6371; // Earth radius in km
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
 
@@ -32,7 +32,7 @@ const RoutePlanner = ({ resources, route, setRoute }) => {
       let minDistance = Infinity;
 
       resources.forEach(res => {
-        // Find nearest available resource (fallback to any if non available, but prioritize available)
+
         if (res.lat && res.lng && res.status?.toLowerCase() !== 'completed') {
           const dist = calculateDistance(disasterLat, disasterLng, res.lat, res.lng);
           if (dist < minDistance) {
@@ -61,18 +61,18 @@ const RoutePlanner = ({ resources, route, setRoute }) => {
   return (
     <>
       <Marker position={route.disasterPoint} icon={disasterIcon}>
-        <Popup className="dark-popup" autoPan={false}>
-          <div className="p-3 flex flex-col gap-1 text-sm text-[#e5e7eb]">
-            <h4 className="font-bold text-[#E8650A] mb-1 pb-1 border-b border-[#E8650A]/30">Disaster Zone</h4>
-            <p>Nearest: <span className="text-white font-bold">{route.resource.title}</span></p>
-            <p>Distance: <span className="text-white font-bold">{route.distance} km</span></p>
-            <p>ETA: <span className="text-white font-bold">{route.eta} mins</span> (at 40km/h)</p>
+        <Popup className="custom-popup" autoPan={false}>
+          <div className="bg-dark-surface p-2 rounded-lg text-sm">
+            <h4 className="font-bold text-red-500 mb-1">Disaster Zone</h4>
+            <p className="text-gray-600 mb-1">Nearest: <span className="text-gray-900 font-bold">{route.resource.title}</span></p>
+            <p className="text-gray-600">Distance: <span className="text-gray-900 font-bold">{route.distance} km</span></p>
+            <p className="text-gray-600">ETA: <span className="text-gray-900 font-bold">{route.eta} mins</span> (at 40km/h)</p>
           </div>
         </Popup>
       </Marker>
-      <Polyline 
-        positions={[route.resourcePoint, route.disasterPoint]} 
-        color="#E8650A" 
+      <Polyline
+        positions={[route.resourcePoint, route.disasterPoint]}
+        color="#E8650A"
         weight={4}
         dashArray="10, 10"
         className="animate-dash"
