@@ -11,7 +11,9 @@ const { errorHandler } = require("./middleware/errorMiddleware");
 
 const app = express();
 
+// CORS configuration - Relaxed for debugging
 app.use(cors());
+app.options("/{*path}", cors()); 
 app.use(express.json());
 
 app.use("/api/health", healthRoutes);
